@@ -1,0 +1,235 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Beaverhawk Base Station</title>
+    <div align="center"> <h1>Beaverhawk Base Station</h1>
+    </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+
+    <script type="text/javascript">
+        var hasGP = false;
+        var repGP;
+        var funGP;
+        var allowed = true;
+        function initialize() {
+            return "getGamepads" in navigator;
+        }
+        function go(k) {
+            $.post('/', { k: k }, function () { });
+        }
+        $(document).keydown(function (env) {
+            if (event.repeat != undefined) {
+                allowed = !event.repeat;
+            }
+            if (!allowed) return;
+            allowed = false;
+            if (env.keyCode == '87') {
+                go('w');
+            }
+            if (env.keyCode == '83') {
+                go('s');
+            }
+            if (env.keyCode == '65') {
+                go('a');
+            }
+            if (env.keyCode == '68') {
+                go('d');
+            }
+            if (env.keyCode == '81') {
+                go('q');
+            }
+            if (env.keyCode == '69') {
+                go('e');
+            }
+            if (env.keyCode == '80') {
+                go('p');
+            }
+            if (env.keyCode == '73') {
+                go('i');
+            }
+            if (env.keyCode == '90') {
+                go('z');
+            }
+            if (env.keyCode == '88') {
+                go('x');
+            }           
+        });
+        $(document).keyup(function (env) {
+            allowed = true;
+            if (env.keyCode == '87') {
+                go('w');
+            }
+            if (env.keyCode == '83') {
+                go('s');
+            }
+            if (env.keyCode == '65') {
+                go('a');
+            }
+            if (env.keyCode == '68') {
+                go('d');
+            }
+        });
+        $(document).focus(function (e) {
+            allowed = true;
+        });
+        $(document).ready(function () {
+            $("#Forward").mousedown(function () {
+                go('w');
+            });
+            $("#Left").mousedown(function () {
+                go('a');
+            });
+            $("#Right").mousedown(function () {
+                go('d');
+            });
+            $("#Backward").mousedown(function () {
+                go('s');
+            });
+            $("#Up").mousedown(function () {
+                go('q');
+            });
+            $("#Down").mousedown(function () {
+                go('e');
+            });
+            $('#Cut').mousedown(function () {
+                go('p');
+            });
+            $('#Init').mousedown(function () {
+                go('i');
+            });
+            $('#Test1').mousedown(function () {
+                go('z');
+            });
+            $('#Test2').mousedown(function () {
+                go('x');
+            });
+        });
+        //Gamepad support
+        function reportOnGamepad() {
+            var gp = navigator.getGamepads()[0];
+            var html = "";
+            html += "id: " + gp.id + "<br/>";
+
+            for (var i = 0; i < gp.buttons.length; i++) {
+                if (i == 0 || i == 2 || i == 6 || i == 7) {
+                    html += "Button " + i + " Rising up "+": ";
+                } else if (i == 1 || i == 3 || i == 4 || i == 5) {
+                    html += "Button " + i + " Going down " + ": ";            
+                } else if (i == 12) {
+                    html += "Button " + i + " Moving forward " + ": ";
+                } else if (i == 13) {
+                    html += "Button " + i + " Moving backward " + ": ";
+                } else if (i == 9) {
+                    html += "Button " + i + " Initial " + ": ";
+                } else if (i == 8) {
+                    html += "Button " + i + " Cut off " + ": ";
+                } else if (i == 14) {
+                    html += "Button " + i + " Turning left " + ": ";
+                } else if (i == 15) {
+                    html += "Button " + i + " Turning right " + ": ";
+                }  else {
+                    html += "Button " + i + ": ";
+                }
+
+                if (gp.buttons[i].pressed) {                
+                    html += " pressed";
+                    if (i == 0 || i == 2 || i == 6 || i == 7) {
+                        go('q');
+                    } else if (i == 1 || i == 3 || i == 4 || i == 5) {
+                        go('e');
+                    } else if (i == 12) {
+                        go('s');
+                    } else if (i == 13) {
+                        go('w');
+                    } else if (i == 9) {
+                        go('i');
+                    } else if (i == 8) {
+                        go('p');
+                    } else if (i == 14) {
+                        go('a');
+                    } else if (i = 15) {
+                        go('d');
+                    }else { }
+                }
+                html += "<br/>";
+            }
+
+            for (var i = 0; i < gp.axes.length; i += 2) {
+                html += "Stick " + (Math.ceil(i / 2) + 1) + ": " + gp.axes[i] + "," + gp.axes[i + 1] + "<br/>";
+            }
+
+            $("#gamepadDisplay").html(html);
+        }
+        function axeGamepad() {
+            var gp = navigator.getGamepads()[0];
+            var axeLR = gp.axes[0];
+            var axeUD = gp.axes[1];
+            if (axeLR < -0.5) {
+                go('a');
+            } else if (axeLR > 0.5) {
+                go('d');
+            } else {                
+            }
+            if (axeUD < -0.5) {
+                go('w');
+            } else if (axeUD > 0.5) {
+                go('d');
+            } else {
+            }
+        }
+        $(document).ready(function () {
+            if (initialize()) {
+                var prompt = "To begin using your gamepad, connect it and press any button!";
+                $("#gamepadPrompt").text(prompt);
+                $(window).on("gamepadconnected", function () {
+                    hasGP = true;
+                    $("#gamepadPrompt").html("Gamepad connected!");
+                    repGP = window.setInterval(reportOnGamepad, 100);
+                    funGP = window.setInterval(axeGamepad, 100);
+                });
+                $(window).on("gamepaddisconnected", function () {
+                    $("#gamepadPrompt").text(prompt);
+                    window.clearInterval(repGP);
+                    window.clearInterval(funGP);
+                });
+                //setup an interval for Chrome
+                var checkGP = window.setInterval(function () {
+                    if (navigator.getGamepads()[0]) {
+                        if (!hasGP) $(window).trigger("gamepadconnected");
+                        window.clearInterval(checkGP);
+                    }
+                }, 500);
+            }
+        });
+
+    </script>
+</head >
+
+ <body>
+
+        <div align="center" id="main">
+            <h3>Manual Mode:</h3>
+            <button id="Init"><h3>I-Initalize</h3></button>
+            <br>
+            <button id="Forward"><h3>W-(Top motor 2 up)forward</h3></button>
+            <button id="Backward"><h3>S-(Top motor 2 down)backward</h3></button>
+            <br>
+            <button id="Left"><h3>A-(BOTTOM motor 1 up)left</h3></button>
+            <button id="Right"><h3>D-(BOTTOM motor 1 down)right</h3></button>
+            <br>
+            <button id="Up"><h3>Q-(both up)up</h3></button>
+            <button id="Down"><h3>E-(both down)down</h3></button>
+            <br>
+            <button id="Cut"><h3>P-cut off</h3></button>
+            <br>
+            <button id="Test1"><h3>Z-test button 1</h3></button>
+            <button id="Test2"><h3>X-test button 2</h3></button>
+            <br>
+        </div>
+    </body>
+    <div id="gamepadPrompt"></div>
+    <div id="gamepadDisplay"></div>
+</html>
